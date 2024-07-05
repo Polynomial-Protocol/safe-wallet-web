@@ -1,0 +1,37 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+
+jobs:
+  push:
+    name: Build safe-wallet image
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.build.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Polynomial-Protocol/that-broken-pipe/build-push-gcloud@main
+        id: build
+        with:
+          google_key: ${{ secrets.GCLOUD_NEW_CD_KEY }}
+          repo: vendor/safe-wallet-web
+          dockerfile: Dockerfile
+          registry: europe-north1-docker.pkg.dev
+          project_id: polynomial-new
+  # deploy:
+  #   name: Deploy new version
+  #   needs: [push]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: Polynomial-Protocol/that-broken-pipe/deploy-version@main
+  #       with:
+  #         services: |
+            
+  #         required_pr_label: auto-deploy-testnet
+  #         version: ${{ needs.push.outputs.version }}
+  #         gh_token: ${{ secrets.GH_PAT }}
